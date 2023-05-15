@@ -272,3 +272,32 @@ push 말고도 back(), forward(), refresh(), prefetch() 등등 많음
 참고로 Link태그는 prefetch기능이 내장되어있음
 (정확히는 스크롤 하다가 link태그가 들어간 html요소를 만나면 자동으로 내부적으로 해당 페이지에
 필요한 데이터들을 미리로드해줌, Link 태그에서 prefetch기능을 쓰기 싫으면 prefetch={false} 옵션을 통해 선택 가능 )
+
+
+
+### 13. 3-tier architecture
+
+client에서 작성한 데이터가 database에 바로 저장되는 방식이 아니라
+중간에 계층 하나를 더 두는 방식
+
+Client(Presentation) Tier - Application Tier(server) - Data Tier
+
+
+
+### 14. 서버 폴더 구조
+
+서버 기능은 /api 폴더를 생성 후 요청 별로 폴더 또 나누기
+
+api/post/~~
+api/get/~~
+
+
+
+### 15. redirect
+
+api 실행 후 특정 url로 라우팅 하고 싶으면
+```react
+return res.redirect(302, '/경로')
+```
+
+(301과 302의 차이: https://nsinc.tistory.com/168)
