@@ -301,3 +301,111 @@ return res.redirect(302, '/경로')
 ```
 
 (301과 302의 차이: https://nsinc.tistory.com/168)
+
+
+
+### 16. Only plain objects can be passed to Client Components from Server Components 경고
+
+props로 _id를 보낼 때는 뒤에 .toString()을 붙여서 보내야함
+(warning이기 때문에 동작이 안되는건 아니지만 toString을 통해 해결 가능) 
+
+
+
+### 17. mongo db 작성, 수정 
+
+작성
+
+```react
+await db.collection( 'post' ).insertOne( content )
+```
+
+
+
+수정
+
+```react
+await db.collection( 'post' ).updateOne( { _id: new ObjectId( content.id ) }, 
+    { $set: { title: content.title, content: content.content } } )
+```
+
+post 콜렉션에 있는 것 중 id가 content.id인 게시물을 가져와서
+해당 게시물의 title을 content.title로, content를 content.content로 변경
+
+(id로 데이터를 가져 올 때는 new ObjectId를 import해서 사용해주기)
+
+
+
+### 18. client 컴포넌트와 server 컴포넌트
+
+큰 페이지에서 js기능이 필요한 경우
+해당 컴포넌트를 통으로 client로 바꾸는 것은 비효율 적인 방식
+
+필요한 부분만 client로 따서 가져오기
+
+!!!!!!!!!!!!SEO 최적화 관련
+( 이 때 자식 컴포넌트(client 컴포넌트)에서 필요한 데이터를 직접 DB에서 가져와도 되지만
+ 이 때 db에서 가져온 데이터를 useEffect에 담아야 하는데 코드 실행 순서가 
+HTML이 모두 렌더링 된 후 JS 코드가 실행되기 때문에 검색엔진봇이 해당 페이지를
+방문할 경우 useEffect가 실행되기 전 HTML에는 텅 빈 상태로 방문할 수 있기 때문에
+부모 컴포넌트에서 DB를 가져온 후 props로 내려주는 방식을 추천)
+
+### 19. Destructring
+
+```react
+export defatul function test( props ) {
+    let result = props.result
+    console.log(result)
+}
+위와 아래 코드는 같음
+export default function test( { result } ) {
+    console.log(result)
+}
+```
+
+
+
+### 20. form태그와 ajax
+
+form태그로 요청시 항상 새로고침이 일어나는 반면
+ajax로 요청시 새로고침이 되지 않는다.
+
+
+
+### 21. JSON.stringify()
+
+서버와 데이터를 송수신 할 땐 원래 문자나 숫자밖에 주고받을 수 없음
+따라서 array와 object 형태의 데이터는 json.stringify()를 사용하면
+큰 따옴표를 통해 array와 object형태를 표현함
+
+
+
+### 22. fetch (+query string)
+
+```react
+<button onClick(() =>{
+        fetch('/api/post/test', { method: 'POST', body: 'hihi' })
+        .then((res) => return res.json())
+    })button>
+```
+
+
+
+body를 전송하는 방법은 직접 body에 담지 않고 query string으로 보낼 수도 있음
+
+```react
+<button onClick(() =>{
+        fetch('/api/post/test?name=kim&age=20')
+    })button>
+```
+
+test.js에서는 name을 req.query로 받음
+
+```react
+export default function test(req, res) {
+    console.log(req.query)
+}
+```
+
+!!!!get요청은 body를 보낼 수 없기 때문에 query string으로 보낼 수 있음!!
+!!!!url에 직접 데이터가 노출되기 때문에 민감한 정보는 담으면 안됨!!
+

@@ -9,6 +9,9 @@
   margin-bottom: 5px;
   box-shadow: rgb(224, 224, 224) 0px 2px 4px 0px;
   cursor: pointer;
+  
+  opacity: 1;
+  transition: all 1s;
 }
 .list-item h4 {
   font-size: 20px;
@@ -19,6 +22,11 @@
   color: grey;
   margin : 5px 0px;
 } 
+
+a {
+  text-decoration: none;
+  color: black;
+}
 
 .p-20 {
   padding: 20px;
@@ -36,3 +44,18 @@ button {
   border-radius: 5px;
   margin-bottom: 10px;
 } 
+
+.navbar {
+  background-color: white;
+  padding: 20px;
+}
+
+.navbar a {
+  margin-right: 10px;
+  text-decoration: none;
+  color: black;
+}
+
+.logo {
+  font-weight: bold;
+}
