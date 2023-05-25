@@ -4,6 +4,12 @@
 
 
 
+1. [adsfadssf](#gdgd)
+
+
+
+
+
 ### 1. Next.js 많이 쓰는 이유를 알아보자
 
 react나 vue를 사용하여 CSR을 통해 서버가 아니라 유저 브라우저에서 실시간 렌더링을 하기 때문에
@@ -38,8 +44,9 @@ next는 큰 layout.js 안에 page.js를 담는 형식으로 구성되어 있음.
 
 
 
-
 ### 3. 페이지 레이아웃 만들기
+
+#gdgd
 
 next에서 프론트는 react를 사용하기 때문에 jsx문법을 사용함
 유의사항 4가지
@@ -409,3 +416,296 @@ export default function test(req, res) {
 !!!!get요청은 body를 보낼 수 없기 때문에 query string으로 보낼 수 있음!!
 !!!!url에 직접 데이터가 노출되기 때문에 민감한 정보는 담으면 안됨!!
 
+
+
+### 23. 배포 (static rendering, dynamic rendering, cache)
+
+npm run build
+작성한 코드들을 순수 html,js,css 파일로 바꿔줌 
+
+
+
+이 때 O표시와 λ기호가 있는데
+O는 static rendering 페이지, λ는 dynamic rendering page이다.
+
+
+
+static은 미리 만들어놓고 쏴주는 반면,
+dynamic은 사용자가 요청할 때 마다 html을 새로 만들어서 보내줌
+
+!!!! dynamic으로 동작해야 하는데 static으로 인식할 경우
+해당 페이지 파일에 아래와 같은 코드 작성
+
+```react
+export const dynamic = 'force-dynamic'
+export const dynamic = 'force-static' (이 코드는 반대상황 원할 경우)
+```
+
+
+
+dynamic rendering의 단점: 서버/DB사용량 부담이 늘어난다
+												 이를 보완하기 위해 **캐싱** 사용!!
+
+**캐싱**: 데이터(결과)를 저장해두고 재사용 하는 방식
+
+```react
+await fetch('/URL', {cache : 'force-cache'})
+```
+
+위와 같은 코드를 작성하면 작성한 url경로로 보낸 요청은 이미 요청한 결과가 있으면
+다시 요청하지 않고 미리 받아놨던 결과를 재사용
+
+사실 위 cache코드는 default로 동작하기 때문에 적지 않아도 자동으로 캐싱기능 사용됨
+
+반대로 실시간 데이터가 중요해서 캐싱을 사용하면 안되는 경우는
+```react
+await fetch('/URL', {cache: 'no-store'})
+```
+
+60초 동안만 캐싱된 데이터 갱신이 필요한 경우
+
+```react
+await fetch ('/URL', {next: {revalidate : 60}})
+```
+
+
+
+### 24. session, JWT(token방식), OAuth
+
+1. 세션방식: 유저가 로그인을 하면 서버는 [아이디, 로그인날짜, 유효기간 , session ID 등등]을
+   DB에 넣어놓고 유저는 서버로부터 DB한테 받은 session ID만 전달받게 된다.
+
+   이후 유저가 요청할 때 마다 session ID를 가지고 검사한 후 결과를 받게 되는 방식
+
+   단점은 요청마다 DB를 조회해야해서 DB 부담이 큼
+   (유저가 많은 서비스는 입출력이 빠른 redis를 session ID보관용 DB로 사용함)
+
+   
+
+2. 토큰방식: 유저가 로그인을 하면 [아이디, 로그인날짜, 유효기간, 등등]을 암호화하여
+   유저에게 보내면 이를 sessionID대체로 사용
+
+   가장 큰 장점은 세션방식의 단점과 반대로 DB를 조회할 필요가 없음
+
+   단점은 토큰 자체가 다른 컴퓨터에 노출되거나 빼앗기면 강제로 소멸시키거나 할 수 있는
+   방식이 없음
+   (해결책은 노출된 토큰을 DB에 저장해놓고 이를 비교하여 차단하면  되는데 이러한 방식을
+   사용하게 되면 session방식과 다른점이 없어서 토큰을 사용하는 이유가 사라짐)
+
+
+
+3. OAuth: A사이트의 회원정보를 B사이트에서 빌려서 사용 가능 (소셜 로그인)
+   
+
+​	!!!!!! Next.js에서 회원기능 구현은 NextAuth.js 라이브러리를 사용하면 매우 쉽게 구현 가능
+​	설치 후 코드만 복붙하면 [소셜로그인, 아이디/비번 로그인, JWT, SESSION, DB adapter] 
+​	모두 사용 가능
+​	단, 아이디/비번 로그인시 JWT(토큰)방식을 강제로 사용해야함 (session금지)
+​	(개발자가 아이디/비번을 직접 취급하면 보안이슈가 생길 수 있어 금지해놓았다고 함)
+
+
+
+### 25. next-auth (github oauth 사용 예시)
+
+1. npm i next-auth
+
+2. pages\api\auth\[...nextauth].js 생성
+
+3. ```react
+   import NextAuth from "next-auth";
+   import GithubProvider from "next-auth/providers/github";
+   
+   export const authOptions = {
+     providers: [
+       GithubProvider({
+         clientId: 'Github에서 발급받은ID',
+         clientSecret: 'Github에서 발급받은Secret',
+       }),
+     ],
+     secret : 'jwt생성시쓰는암호'
+   };
+   export default NextAuth(authOptions); 
+   ```
+
+   작성
+
+4. 로그인 버튼을 만들 페이지에서 코드 작성
+   ```react
+   'use client'
+   
+   import { signIn } from 'next-auth/react'
+   
+   export default function LoginBtn() {
+     return (
+       <button onClick={ () => { signIn() } }>로그인</button>
+     )
+   }
+   ```
+
+5. 실제로 로그인이 되었는지에 대한 여부를 확인하고 싶으면 'getServerSession()' 사용
+   ```react
+   import { getServerSession } from 'next-auth'
+   
+   ...~~~
+       
+       let session = await getServerSession( authOptions )
+     	console.log( session )
+   ```
+
+   
+
+### 26. JSX 안에서는 if문은 못쓰지만 삼항연산자는 사용 가능
+
+```react
+{ 조건식 ? 참일 때 실행 코드 : 거짓일 때 실행 코드 }
+```
+
+
+
+### 27. DB adapter (mongo-db로 사용)
+
+1. npm i @next-auth/mongodb-adapter(4버전이 잘 작동한다고 함)
+
+2.  25-3에서 작성한 코드에서 secret밑에
+   ```react
+   import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
+   
+   secret: ~~~~,
+   adapter: MongoDBAdapter( connectDB ) (다른 db쓸 경우 해당 어댑터 사용)
+   ```
+
+   
+
+   3. mongoDB를 확인해보면
+      accounts, session, users를 가진 collection이 생성됨
+
+      1. session: 현재 로그인된 유저 세션정보 저장용
+      2. users: 가입된 유저 정보
+      3. accounts: 가입된 유저의 계정 정보
+
+      하나의 유저는 여러개의 계정을 가질 수 있기 때문에 위와 같이 나눔
+      (하나의 유저가 github, google계정 두개로 가입한 경우, users에는 하나의 문서가,
+      accounts에는 두개의 문서가 생성됨)
+
+      특정 database의 collection에 위 정보들을 저장하고 싶으면
+      초기 db설정에서 url을 작성하는 곳에 
+
+      ```react
+      'mongodb+srv://아이디:비번@nextstudy.ymnasaj.mongodb.net/?retryWrites=true&w=majority'
+      ```
+
+      위와 같은 코드에 ?자리에 
+      mongodb.net/collection이름?~~~
+      과 같이 작성하면 가능
+
+
+
+### 28. 소셜로그인 말고 직접 아이디,비번 구현하기
+
+1. npm i bcrypt
+
+2. api 코드 작성
+   ```react
+   import { connectDB } from "@/util/database";
+   import bcrypt from 'bcrypt'
+   
+   export default async function handler( req, res ) {
+     if ( req.method == 'POST' ) {
+       const client = await connectDB
+       const db = client.db( 'forum' )
+   
+       let hash = await bcrypt.hash( req.body.password, 10 )
+       req.body.password = hash
+   
+       await db.collection('user_cred').insertOne( req.body )
+   
+       res.status(200).json('가입완료')
+     }
+   }
+   ```
+
+   hash는 유저가 작성한 패스워드를 bcrypt 라이브러리를 사용하여 암호화 한 변수로
+   db에도 패스워드 자체를 입력하는 것이 아니라 암호화 하여 저장
+
+   
+
+3. 25-3에 있는 코드 중 두 곳에 추가 코드 작성 (코드 두개 추가작성!! 두개!!!)
+
+   ```react
+   import CredentialsProvider from "next-auth/providers/credentials";
+   import bcrypt from 'bcrypt';
+   // 위 두개 import 해주고!
+   
+   providers: [
+       GithubProvider({
+         clientId: 'Github에서 발급받은ID',
+         clientSecret: 'Github에서 발급받은Secret',
+       }),
+       요기!!!
+   ],
+   조기!!!
+   adapter: MongoDBAdapter(connectDB),
+   secret: 'qwer1234' 
+   ```
+
+
+   요기!!! 이 부분에 아래 코드 작성
+   ```react
+   CredentialsProvider({
+         //1. 로그인페이지 폼 자동생성해주는 코드 
+         name: "credentials",
+         credentials: {
+           email: { label: "email", type: "text" },
+           password: { label: "password", type: "password" },
+           // 로그인 페이지에 들어갈 input들 설정하는 옵션 코드
+         },
+   
+         //2. 로그인요청시 실행되는코드
+         //직접 DB에서 아이디,비번 비교하고 
+         //아이디,비번 맞으면 return 결과, 틀리면 return null 해야함
+         async authorize(credentials) {
+           let db = (await connectDB).db('forum');
+           let user = await db.collection('user_cred').findOne({email : credentials.email})
+           if (!user) {
+             console.log('해당 이메일은 없음');
+             return null
+           }
+           const pwcheck = await bcrypt.compare(credentials.password, user.password);
+           if (!pwcheck) {
+             console.log('비번틀림');
+             return null
+           }
+           return user
+         }
+       })
+   ```
+
+   조기!!! 부분에 아래 코드 작성
+   ```react
+   //3. jwt 써놔야 잘됩니다 + jwt 만료일설정
+     session: {
+       strategy: 'jwt',
+       maxAge: 30 * 24 * 60 * 60 //30일
+     },
+   
+   
+     callbacks: {
+       //4. jwt 만들 때 실행되는 코드 
+       //user변수는 DB의 유저정보담겨있고 token.user에 뭐 저장하면 jwt에 들어갑니다.
+       jwt: async ({ token, user }) => {
+         if (user) {
+           token.user = {};
+           token.user.name = user.name
+           token.user.email = user.email
+         }
+         return token;
+       },
+       //5. 유저 세션이 조회될 때 마다 실행되는 코드
+       session: async ({ session, token }) => {
+         session.user = token.user;  
+         return session;
+       },
+     },
+   ```
+
+   

@@ -3,6 +3,8 @@ import Link from "next/link"
 import DetailLink from "./detailLink"
 import ListItem from "./ListItem"
 
+export const dynamic = 'force-dynamic'
+
 export default async function List() {
 
   const client = await connectDB

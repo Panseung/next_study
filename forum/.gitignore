@@ -36,3 +36,6 @@ next-env.d.ts
 
 #db pw
 mongo_info.js
+
+#github oauth info
+github_oauth.js
